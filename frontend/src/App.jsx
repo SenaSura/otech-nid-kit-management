@@ -4,6 +4,8 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 
 export default function App() {
+  const isAuthenticated = Boolean(localStorage.getItem("otech_user"));
+
   return (
     <Routes>
 
@@ -14,7 +16,7 @@ export default function App() {
 
       <Route
         path="/"
-        element={<Dashboard />}
+        element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" replace />}
       />
 
       {/* Redirect unknown routes */}
