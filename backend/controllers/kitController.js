@@ -14,14 +14,25 @@ exports.createKit = async (req, res) => {
 
 // Get all kits
 exports.getAllKits = async (req, res) => {
-    try {
-        const kits = await Kit.findAll();
-        res.json(kits);
-    } catch (error) {
-        res.status(500).json({
+    params = req.query;
+    if (params.status) {
+        try {
+            const kits = await Kit.findAll({ where: { status: params.status } });
+            res.json(kits);
+        } catch (error) {
+            res.status(500).json({
+                message: error.message,
+            });
+        }
+    } else {
+        try {
+            const kits = await Kit.findAll();
+            res.json(kits);
+        } catch (error) {
+            res.status(500).json({
             message: error.message,
         });
-    }
+    }}
 };
 
 // Get one kit

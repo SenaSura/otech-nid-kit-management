@@ -19,17 +19,21 @@ import {
     Clock,
     Check,
     Filter,
-    HelpCircle
+    HelpCircle,
+    ShieldCheck
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import UserManagement from '../components/UserManagement';
 
 export default function Dashboard() {
     const navigate = useNavigate();
+    const currentUser = JSON.parse(localStorage.getItem('otech_user') || '{}');
     const [currentTab, setCurrentTab] = useState('dashboard');
     const [searchTerm, setSearchTerm] = useState('');
     const [typeFilter, setTypeFilter] = useState('All');
     const [statusFilter, setStatusFilter] = useState('All');
     const [kits, setKits] = useState([]);
+    const [transferrableKits, setTransferrableKits] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
 
@@ -98,8 +102,27 @@ export default function Dashboard() {
         }
     };
 
+    const fetchTranferrableKits = async () => {
+        setIsLoading(true);
+        setError(null);
+        try {
+            const response = await fetch('/api/kits?status=Active');
+            if (!response.ok) {
+                throw new Error('Failed to fetch kits from API');
+            }
+            const data = await response.json();
+            setTransferrableKits(data);
+        } catch (err) {
+            console.error('Error fetching kits:', err);
+            setError(err.message);
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
     useEffect(() => {
         fetchKits();
+        fetchTranferrableKits();
     }, []);
 
     // Create or Update a kit
@@ -366,6 +389,16 @@ export default function Dashboard() {
                         >
                             <Wrench size={18} /> Maintenance
                         </button>
+                        {currentUser.role === 'admin' && <button
+                            onClick={() => setCurrentTab('users')}
+                            className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                                currentTab === 'users'
+                                    ? 'bg-red-600 text-white shadow-lg shadow-red-600/25 scale-[1.02]'
+                                    : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-100'
+                            }`}
+                        >
+                            <ShieldCheck size={18} /> Users & Roles
+                        </button>}
                     </nav>
                 </div>
 
@@ -393,10 +426,10 @@ export default function Dashboard() {
                         <span className="text-xs bg-emerald-100/70 text-emerald-800 px-3 py-1 rounded-full font-semibold border border-emerald-200/50">
                           Gateway Connected
                         </span>
-                        <div className="w-8.5 h-8.5 rounded-full bg-slate-200/80 flex items-center justify-center font-bold text-sm text-slate-700 border border-slate-300">
-                          GB
+                                                <div className="w-8.5 h-8.5 rounded-full bg-slate-200/80 flex items-center justify-center font-bold text-sm text-slate-700 border border-slate-300" title={currentUser.email}>
+                                                    {(currentUser.name || currentUser.email || 'U').slice(0, 2).toUpperCase()}
                         </div>
-                        <button onClick={() => navigate('/login')} className="text-xs bg-red-50 hover:bg-red-100 text-red-700 px-3 py-1.5 rounded-xl font-semibold transition border border-red-100/50 cursor-pointer">
+                                                <button onClick={() => { localStorage.removeItem('otech_user'); navigate('/login', { replace: true }); }} className="text-xs bg-red-50 hover:bg-red-100 text-red-700 px-3 py-1.5 rounded-xl font-semibold transition border border-red-100/50 cursor-pointer">
                           Logout
                         </button>
                     </div>
@@ -416,6 +449,8 @@ export default function Dashboard() {
                             </button>
                         </div>
                     )}
+
+                    {currentTab === 'users' && currentUser.role === 'admin' && <UserManagement currentUser={currentUser} />}
 
                     {currentTab === 'dashboard' && (
                         <>
@@ -1051,7 +1086,7 @@ export default function Dashboard() {
                                     required
                                     value={newTransfer.kitId}
                                     onChange={(e) => {
-                                        const selected = kits.find(k => k.kitId === e.target.value);
+                                        const selected = transferrableKits.find(k => k.kitId === e.target.value);
                                         setNewTransfer(prev => ({
                                             ...prev,
                                             kitId: e.target.value,
@@ -1061,7 +1096,7 @@ export default function Dashboard() {
                                     className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-600 focus:bg-white transition-colors"
                                 >
                                     <option value="">-- Choose registered Kit --</option>
-                                    {kits.map(k => (
+                                    {transferrableKits.map(k => (
                                         <option key={k.id} value={k.kitId}>{k.kitId} ({k.machineType} - {k.serialNumber})</option>
                                     ))}
                                 </select>

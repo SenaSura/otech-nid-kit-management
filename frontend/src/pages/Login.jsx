@@ -206,9 +206,9 @@ export default function Login() {
                 <div className="flex items-center bg-slate-950/80 border border-slate-800 rounded-2xl px-4 py-3.5 focus-within:border-red-500/80 focus-within:ring-1 focus-within:ring-red-500/25 transition-all">
                   <Mail size={18} className="text-slate-500" />
                   <input
-                    type="email"
+                    type="text"
                     required
-                    placeholder="name@otech.gov.et"
+                    placeholder="name@otech.gov.et or admin"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full bg-transparent outline-none ml-3 text-sm text-slate-100 placeholder-slate-600"

@@ -11,14 +11,17 @@ const User = sequelize.define("User", {
         type: DataTypes.STRING,
         allowNull: false,
         unique: true,
-        validate: {
-            isEmail: true,
-        },
     },
 
     passwordHash: {
         type: DataTypes.STRING,
         allowNull: false,
+    },
+
+    role: {
+        type: DataTypes.ENUM("admin", "user"),
+        allowNull: false,
+        defaultValue: "user",
     },
 });
 
